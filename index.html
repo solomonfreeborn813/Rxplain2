@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rxplain</title></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: unchanged search-first page, now floating on a vivid gradient field; every major block is a frosted-glass panel (blur, translucent fill, white hairline border). Light and dark themes share the same orbs, re-tuned per theme. */
+:root{
+  --bg:#E8EEFC; --ink:#0F2038; --muted:#2F435E;
+  --accent:#E0791A; --accent-ink:#2A1200; --warn:#B3261E;
+  --glass:rgba(255,255,255,.55); --glass-soft:rgba(255,255,255,.38); --glass-strong:rgba(255,255,255,.82); --glass-solid:rgba(255,255,255,.94);
+  --glass-border:rgba(255,255,255,.85); --glass-hi:rgba(255,255,255,.7); --line:rgba(15,32,56,.16);
+  --shadow:0 12px 40px rgba(70,55,150,.2); --code-bg:rgba(15,32,56,.9); --code-ink:#E8EEFC;
+  --o1:rgba(255,128,84,.85); --o2:rgba(139,108,255,.8); --o3:rgba(45,212,191,.7); --o4:rgba(255,211,107,.8);
+  --r:20px;
+  --display:'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif;
+  --body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#070B1D; --ink:#EAF0FF; --muted:#AAB9DA;
+  --accent:#FFB454; --accent-ink:#2A1700; --warn:#FF9A92;
+  --glass:rgba(20,28,62,.5); --glass-soft:rgba(255,255,255,.07); --glass-strong:rgba(255,255,255,.15); --glass-solid:rgba(16,24,52,.94);
