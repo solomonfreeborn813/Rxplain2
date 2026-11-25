@@ -11,7 +11,13 @@
 <meta name="msapplication-TileColor" content="#0a0820">
 <meta name="apple-mobile-web-app-title" content="Rxplain">
 <meta name="mobile-web-app-capable" content="yes">
-</head><body>
+<meta name="description" content="Look up any medicine and read the official FDA label in plain words. Uses, dosage, warnings, side effects and interactions, live from openFDA.">
+<meta property="og:title" content="Rxplain">
+<meta property="og:description" content="Look up any medicine and read the official FDA label in plain words.">
+<meta property="og:image" content="https://rxplain2.vercel.app/icon-512.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: unchanged search-first page, now floating on a vivid gradient field; every major block is a frosted-glass panel (blur, translucent fill, white hairline border). Light and dark themes share the same orbs, re-tuned per theme. */
@@ -167,6 +173,8 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);display
 }
 @media (max-width:520px){nav a.link{display:none}}
 </style>
+</head><body>
+<noscript><p style="padding:16px;font-family:sans-serif">Rxplain needs JavaScript to search drug labels.</p></noscript>
 
 <div class="wrap">
   <nav>
@@ -272,7 +280,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);display
   var POPULAR=['Ibuprofen','Metformin','Amoxicillin','Lisinopril','Sertraline','Atorvastatin','Tylenol'];
 
   var $=function(s){return document.querySelector(s)};
-  var res=$('#result'),label=$('#label'),q=$('#q'),state={all:[],i:0,tab:'uses',offline:false,term:''};
+  var res=$('#result'),label=$('#label'),q=$('#q'),state={all:[],i:0,tab:'uses',offline:false,term:'',req:0};
 
   POPULAR.forEach(function(n){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=n;b.onclick=function(){q.value=n;run(n)};$('#chips').appendChild(b)});
 
@@ -287,8 +295,8 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);display
   function first(a){return a&&a[0]?a[0]:''}
 
   function run(term){
-    term=(term||'').trim();if(!term)return;
-    state.term=term;
+    term=(term||'').replace(/["\\]/g,' ').replace(/\s+/g,' ').trim();if(!term)return;
+    state.term=term;var my=++state.req;
     res.replaceChildren(Object.assign(el('div','status loading'),{}));
     res.firstChild.appendChild(el('i'));res.firstChild.appendChild(document.createTextNode('Searching the FDA label database…'));
     var s='openfda.brand_name:"'+term+'" OR openfda.generic_name:"'+term+'" OR openfda.substance_name:"'+term+'"';
@@ -298,10 +306,12 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);display
       if(!r.ok)throw new Error('http '+r.status);
       return r.json();
     }).then(function(d){
+      if(my!==state.req)return;
       state.offline=false;
       if(!d.results||!d.results.length)return noResult(term);
       show(d.results);
     }).catch(function(){
+      if(my!==state.req)return;
       if(/ibuprofen|advil|motrin/i.test(term)){state.offline=true;show(SAMPLE.results)}
       else{
         res.replaceChildren();
@@ -344,7 +354,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);display
       if(!t)throw new Error('empty');
       SUMS[key]=t.trim();out.textContent=SUMS[key];btn.textContent='Summarize again';btn.disabled=false;
     }).catch(function(){
-      out.className='out err';out.textContent='The free AI service did not respond (it may be busy, rate-limited, or blocked in this preview). The original label text below is unaffected.';
+      out.className='out err';out.textContent='The free AI service did not respond (it may be busy or rate-limited). The original label text below is unaffected.';
       btn.textContent='Try again';btn.disabled=false;
     });
   }
@@ -393,12 +403,12 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);display
     panel.appendChild(el('h3',null,SECTIONS[idx].label));
     var srcText=av[idx].map(function(k){return k[1]+': '+clean(r[k[0]])}).join('\n\n').slice(0,6000);
     var skey=state.term+'|'+state.i+'|'+state.tab;
-    var ai=el('div','ai');
-    ai.appendChild(el('div','tag mono','AI summary / check against the label text below'));
+    var aibox=el('div','ai');
+    aibox.appendChild(el('div','tag mono','AI summary / check against the label text below'));
     var aout=el('div','out',SUMS[skey]||'');
     var abtn=el('button','go',SUMS[skey]?'Summarize again':'Summarize with AI');abtn.type='button';
     abtn.onclick=function(){summarize(srcText,skey,abtn,aout)};
-    ai.appendChild(abtn);ai.appendChild(aout);panel.appendChild(ai);
+    aibox.appendChild(abtn);aibox.appendChild(aout);panel.appendChild(aibox);
     av[idx].forEach(function(k){
       var b=el('div','blk'+(k[2]?' warnblk':''));
       b.appendChild(el('h4','mono',k[1]));
@@ -415,7 +425,7 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);display
     body.appendChild(panel);res.appendChild(body);
     var n=el('div','note');
     n.innerHTML='';
-    if(state.offline){n.appendChild(el('b',null,'Sample data. '));n.appendChild(document.createTextNode('Live lookups need access to api.fda.gov, which this preview blocks. Open the downloaded site to search any drug.'))}
+    if(state.offline){n.appendChild(el('b',null,'Sample data. '));n.appendChild(document.createTextNode('The live FDA service could not be reached, so this is a built-in sample. Check your connection and search again.'))}
     else{n.appendChild(el('b',null,'Source: '));n.appendChild(document.createTextNode('FDA structured product label via openFDA. Information only, not medical advice.'))}
     res.appendChild(n);
   }
